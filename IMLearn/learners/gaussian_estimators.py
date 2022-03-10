@@ -1,5 +1,6 @@
 from __future__ import annotations
 import numpy as np
+import math
 from numpy.linalg import inv, det, slogdet
 
 
@@ -7,6 +8,7 @@ class UnivariateGaussian:
     """
     Class for univariate Gaussian Distribution Estimator
     """
+
     def __init__(self, biased_var: bool = False) -> UnivariateGaussian:
         """
         Estimator for univariate Gaussian mean and variance parameters
@@ -34,6 +36,7 @@ class UnivariateGaussian:
         self.fitted_, self.mu_, self.var_ = False, None, None
 
     def fit(self, X: np.ndarray) -> UnivariateGaussian:
+
         """
         Estimate Gaussian expectation and variance from given samples
 
@@ -51,10 +54,20 @@ class UnivariateGaussian:
         Sets `self.mu_`, `self.var_` attributes according to calculated estimation (where
         estimator is either biased or unbiased). Then sets `self.fitted_` attribute to `True`
         """
-        raise NotImplementedError()
+        # raise NotImplementedError()
 
-        self.fitted_ = True
+        self.fitted_ = True  # TODO continue
+        # if self.biased_:
+
+        # self.mu_
+
         return self
+
+    def pdf_halper(self, sample):
+        bottom = (2 * math.pi * self.var_) ** .5
+        top = math.exp(-(float(sample) - float(self.mu_)) ** 2
+                       / (2 * self.var_))
+        return top / bottom
 
     def pdf(self, X: np.ndarray) -> np.ndarray:
         """
@@ -76,7 +89,10 @@ class UnivariateGaussian:
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `pdf` function")
-        raise NotImplementedError()
+        array = np.array(X.size)
+        for i in range(X.size):
+            array[i] = self.pdf_halper(X[i])
+        return array
 
     @staticmethod
     def log_likelihood(mu: float, sigma: float, X: np.ndarray) -> float:
@@ -97,13 +113,20 @@ class UnivariateGaussian:
         log_likelihood: float
             log-likelihood calculated
         """
-        raise NotImplementedError()
+        new_model = UnivariateGaussian()
+        new_model.mu_ = mu
+        new_model.var_ = sigma
+        total = 0
+        for i in range(X.size):
+            total += math.log(new_model.pdf_halper(X[i]))
+        return total
 
 
 class MultivariateGaussian:
     """
     Class for multivariate Gaussian Distribution Estimator
     """
+
     def __init__(self):
         """
         Initialize an instance of multivariate Gaussian estimator
@@ -189,4 +212,5 @@ class MultivariateGaussian:
         log_likelihood: float
             log-likelihood calculated
         """
+
         raise NotImplementedError()

@@ -56,11 +56,12 @@ class UnivariateGaussian:
         """
         # raise NotImplementedError()
 
-        self.fitted_ = True  # TODO continue
-        # if self.biased_:
-
-        # self.mu_
-
+        self.fitted_ = True
+        self.mu_ = np.mean(X)
+        if self.biased_:
+            self.var_ = np.var(X, ddof=0)
+        else:
+            self.var_ = np.var(X, ddof=1)
         return self
 
     def pdf_halper(self, sample):
@@ -166,8 +167,8 @@ class MultivariateGaussian:
         Sets `self.mu_`, `self.cov_` attributes according to calculated estimation.
         Then sets `self.fitted_` attribute to `True`
         """
-        raise NotImplementedError()
-
+        self.mu_ = X.mean(axis=0)
+        self.cov_ = np.cov(X)
         self.fitted_ = True
         return self
 
@@ -191,7 +192,20 @@ class MultivariateGaussian:
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `pdf` function")
-        raise NotImplementedError()
+        det = np.linalg.det(self.cov_)
+        X_norm = X - self.mu_
+        X_norm_trans = np.transpose(X_norm)
+        cov_op = np.invert(self.cov_)
+        rows, cols = X.shape
+        new_array = np.array(rows)
+        bottom = ((2 * math.pi) ** rows * det) ** .5
+        for i in range(rows):
+            # mat1 = np.multiply(X_norm_trans[i], cov_op)
+            # mat2 = np.multiply(mat1, X_norm[i])
+            # top = math.exp(-0.5 * mat2[0])
+            top = math.exp(-0.5 * X_norm_trans[i]*cov_op*X_norm[i])
+            new_array[i] = top / bottom
+        return new_array
 
     @staticmethod
     def log_likelihood(mu: np.ndarray, cov: np.ndarray, X: np.ndarray) -> float:
@@ -213,4 +227,11 @@ class MultivariateGaussian:
             log-likelihood calculated
         """
 
-        raise NotImplementedError()
+        new_model = MultivariateGaussian()
+        new_model.mu_ = mu
+        new_model.cov_ = cov
+        new_array = new_model.pdf(X)
+        total = 0
+        for i in new_array:
+            total += math.log(i)
+        return total

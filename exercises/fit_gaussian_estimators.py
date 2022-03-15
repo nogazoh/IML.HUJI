@@ -3,6 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.io as pio
 pio.templates.default = "simple_white"
+import exercises
 
 
 def test_univariate_gaussian():

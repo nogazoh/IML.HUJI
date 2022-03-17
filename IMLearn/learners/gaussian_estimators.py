@@ -54,8 +54,6 @@ class UnivariateGaussian:
         Sets `self.mu_`, `self.var_` attributes according to calculated estimation (where
         estimator is either biased or unbiased). Then sets `self.fitted_` attribute to `True`
         """
-        # raise NotImplementedError()
-
         self.fitted_ = True
         self.mu_ = np.mean(X)
         if self.biased_:
@@ -203,7 +201,7 @@ class MultivariateGaussian:
             # mat1 = np.multiply(X_norm_trans[i], cov_op)
             # mat2 = np.multiply(mat1, X_norm[i])
             # top = math.exp(-0.5 * mat2[0])
-            top = math.exp(-0.5 * X_norm_trans[i]*cov_op*X_norm[i])
+            top = math.exp(-0.5 * X_norm_trans[i] * cov_op * X_norm[i])
             new_array[i] = top / bottom
         return new_array
 

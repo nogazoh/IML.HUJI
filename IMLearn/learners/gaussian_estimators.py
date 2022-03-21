@@ -199,7 +199,7 @@ class MultivariateGaussian:
         bottom = (((2 * math.pi) ** cols) * det1) ** .5
         in_x = lambda x: (-0.5) * (np.matmul(np.matmul(X_norm(x).T, cov_op), X_norm(x)))
         pdf_vals = lambda a: math.exp(in_x(a)) / bottom
-        return np.apply_along_axis(pdf_vals,1,X)
+        return np.apply_along_axis(pdf_vals, 1, X)
 
     @staticmethod
     def log_likelihood(mu: np.ndarray, cov: np.ndarray, X: np.ndarray) -> float:
@@ -223,13 +223,13 @@ class MultivariateGaussian:
         det1 = np.linalg.det(cov)
         rows, cols = X.shape
         d = cov.shape[0]
-        const_val = cols*(math.log(1/(math.sqrt(((2*math.pi)**d)*det1))))
+        const_val = cols * (math.log(1 / (math.sqrt(((2 * math.pi) ** d) * det1))))
         cov_op = np.linalg.inv(cov)
         sum = 0
         for i in range(X.shape[0]):
             xi = X[i] - mu
-            xi_t = (xi).T
-            cur = np.matmul(np.matmul(xi_t, cov_op),xi)
+            xi_t = xi.T
+            cur = np.matmul(np.matmul(xi_t, cov_op), xi)
             sum += cur
-        to_ret = const_val + (-0.5)*sum
+        to_ret = const_val + (-0.5) * sum
         return to_ret

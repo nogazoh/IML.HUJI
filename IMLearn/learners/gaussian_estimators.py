@@ -64,9 +64,10 @@ class UnivariateGaussian:
 
     def pdf_halper(self, sample):
         bottom = (2 * math.pi * self.var_) ** .5
-        top = math.exp(-(float(sample) - float(self.mu_)) ** 2
-                       / (2 * self.var_))
+        top = math.exp(-(float(sample) - float(self.mu_)) ** 2 / (2 * self.var_))
         return top / bottom
+
+    # return (top / bottom)
 
     def pdf(self, X: np.ndarray) -> np.ndarray:
         """
@@ -88,9 +89,9 @@ class UnivariateGaussian:
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `pdf` function")
-        array = np.array(X.size)
+        array = np.ndarray(X.shape[0])
         for i in range(X.size):
-            array[i] = self.pdf_halper(X[i])
+            array[i] = (self.pdf_halper(X[i]))
         return array
 
     @staticmethod
@@ -116,6 +117,7 @@ class UnivariateGaussian:
         new_model.mu_ = mu
         new_model.var_ = sigma
         total = 0
+
         for i in range(X.size):
             total += math.log(new_model.pdf_halper(X[i]))
         return total
@@ -166,7 +168,7 @@ class MultivariateGaussian:
         Then sets `self.fitted_` attribute to `True`
         """
         self.mu_ = X.mean(axis=0)
-        self.cov_ = np.cov(X)
+        self.cov_ = np.cov(X.T).T
         self.fitted_ = True
         return self
 
@@ -190,20 +192,14 @@ class MultivariateGaussian:
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `pdf` function")
-        det = np.linalg.det(self.cov_)
-        X_norm = X - self.mu_
-        X_norm_trans = np.transpose(X_norm)
-        cov_op = np.invert(self.cov_)
+        det1 = np.linalg.det(self.cov_)
         rows, cols = X.shape
-        new_array = np.array(rows)
-        bottom = ((2 * math.pi) ** rows * det) ** .5
-        for i in range(rows):
-            # mat1 = np.multiply(X_norm_trans[i], cov_op)
-            # mat2 = np.multiply(mat1, X_norm[i])
-            # top = math.exp(-0.5 * mat2[0])
-            top = math.exp(-0.5 * X_norm_trans[i] * cov_op * X_norm[i])
-            new_array[i] = top / bottom
-        return new_array
+        X_norm = lambda x: x.T - self.mu_
+        cov_op = np.linalg.inv(self.cov_)
+        bottom = (((2 * math.pi) ** cols) * det1) ** .5
+        in_x = lambda x: (-0.5) * (np.matmul(np.matmul(X_norm(x).T, cov_op), X_norm(x)))
+        pdf_vals = lambda a: math.exp(in_x(a)) / bottom
+        return np.apply_along_axis(pdf_vals,1,X)
 
     @staticmethod
     def log_likelihood(mu: np.ndarray, cov: np.ndarray, X: np.ndarray) -> float:
@@ -224,12 +220,16 @@ class MultivariateGaussian:
         log_likelihood: float
             log-likelihood calculated over all input data and under given parameters of Gaussian
         """
-
-        new_model = MultivariateGaussian()
-        new_model.mu_ = mu
-        new_model.cov_ = cov
-        new_array = new_model.pdf(X)
-        total = 0
-        for i in new_array:
-            total += math.log(i)
-        return total
+        det1 = np.linalg.det(cov)
+        rows, cols = X.shape
+        d = cov.shape[0]
+        const_val = cols*(math.log(1/(math.sqrt(((2*math.pi)**d)*det1))))
+        cov_op = np.linalg.inv(cov)
+        sum = 0
+        for i in range(X.shape[0]):
+            xi = X[i] - mu
+            xi_t = (xi).T
+            cur = np.matmul(np.matmul(xi_t, cov_op),xi)
+            sum += cur
+        to_ret = const_val + (-0.5)*sum
+        return to_ret

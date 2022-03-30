@@ -1,3 +1,5 @@
+import os
+
 from IMLearn.utils import split_train_test
 from IMLearn.learners.regressors import LinearRegression
 
@@ -23,6 +25,11 @@ def load_data(filename: str):
     Design matrix and response vector (prices) - either as a single
     DataFrame or a Tuple[DataFrame, Series]
     """
+    file = pd.read_csv(filename)
+    df = pd.DataFrame(file)
+    df = df.reset_index()
+    # for line in df.iterrows():
+
     raise NotImplementedError()
 
 
@@ -43,6 +50,7 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
     output_path: str (default ".")
         Path to folder in which plots are saved
     """
+
     raise NotImplementedError()
 
 

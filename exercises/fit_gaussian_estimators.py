@@ -10,7 +10,9 @@ def test_univariate_gaussian():
     # Question 2 - Empirically showing sample mean is consistent
     arr_si = 1000
     cor_num = 100
-    array_q1 = np.random.normal(10, 1, arr_si)
+    # array_q1 = np.random.normal(10, 1, arr_si)
+    array_q1 = np.array([1, 5, 2, 3, 8, -4, -2, 5, 1, 10, -10, 4, 5, 2, 7, 1, 1, 3, 2, -1, -3, 1, -4, 1, 2, 1,
+              -4, -4, 1, 3, 2, 6, -6, 8, 3, -6, 4, 1, -2, 3, 1, 4, 1, 4, -2, 3, -1, 0, 3, 5, 0, -2])
     new_u_g = UnivariateGaussian()
     new_u_g.fit(array_q1)
     print(new_u_g.mu_, new_u_g.var_)
@@ -82,3 +84,6 @@ if __name__ == '__main__':
     np.random.seed(0)
     test_univariate_gaussian()
     test_multivariate_gaussian()
+
+
+

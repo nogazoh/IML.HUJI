@@ -9,6 +9,7 @@ class PolynomialFitting(BaseEstimator):
     """
     Polynomial Fitting using Least Squares estimation
     """
+
     def __init__(self, k: int) -> PolynomialFitting:
         """
         Instantiate a polynomial fitting estimator
@@ -19,7 +20,9 @@ class PolynomialFitting(BaseEstimator):
             Degree of polynomial to fit
         """
         super().__init__()
-        raise NotImplementedError()
+        self.base_ = k
+        self.fitted_ = False  # is it needed?
+        self.coefs_ = None  # is it needed?
 
     def _fit(self, X: np.ndarray, y: np.ndarray) -> NoReturn:
         """
@@ -33,6 +36,12 @@ class PolynomialFitting(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
+        rows, cols = X.shape
+        # self.coefs_ =
+
+        self.fitted_ = True #only if need this variable
+
+
         raise NotImplementedError()
 
     def _predict(self, X: np.ndarray) -> np.ndarray:

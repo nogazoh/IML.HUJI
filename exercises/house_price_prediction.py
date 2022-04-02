@@ -9,6 +9,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 import plotly.io as pio
+from matplotlib import pyplot as plt
+
 pio.templates.default = "simple_white"
 
 
@@ -26,11 +28,17 @@ def load_data(filename: str):
     DataFrame or a Tuple[DataFrame, Series]
     """
     file = pd.read_csv(filename)
-    df = pd.DataFrame(file)
-    df = df.reset_index()
-    # for line in df.iterrows():
-
-    raise NotImplementedError()
+    new_df = pd.DataFrame(file)
+    new_df = new_df.reset_index()
+    column_names = ['sqft_living', 'sqft_lot', 'sqft_above', 'sqft_basement']
+    new_df['sqft_Total'] = new_df[column_names].sum(axis=1)
+    new_df = new_df.from_records(new_df, columns=["id", 'sqft_Total', "date", "bedrooms", "bathrooms", "sqft_living", "sqft_lot",
+                                      "floors", "waterfront", "view", "condition", "grade", "sqft_above",
+                                      "sqft_basement", "yr_built", "yr_renovated", "zipcode", "sqft_living15",
+                                      "sqft_lot15", "price"])
+    new_df = new_df[new_df['price'] > 0]
+    new_df = new_df[new_df['id'] > 0]
+    return new_df
 
 
 def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") -> NoReturn:
@@ -50,17 +58,28 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
     output_path: str (default ".")
         Path to folder in which plots are saved
     """
+    for feature in X:
+        new_cov = np.cov(df[feature].values, y)
+        varx = np.var(df[feature].values)
+        vary = np.var(y)
+        pc = new_cov / vary * varx
+        plt.title("Pearson Correlation between "
+                  "" + str(feature) + " and price = " + str(pc))
+        plt.xlabel(str(feature))
+        plt.ylabel("price")
+        plt.scatter(df[feature].values, y)
+        plt.savefig(output_path + feature)
 
-    raise NotImplementedError()
 
 
 if __name__ == '__main__':
     np.random.seed(0)
     # Question 1 - Load and preprocessing of housing prices dataset
-    raise NotImplementedError()
-
+    df = load_data("C:/Users/nogaz/PycharmProjects/IML.HUJI/datasets/house_prices.csv")
+    price = df['price']
+    df = df.drop('price', axis=1)
     # Question 2 - Feature evaluation with respect to response
-    raise NotImplementedError()
+    feature_evaluation(df, price)
 
     # Question 3 - Split samples into training- and testing sets.
     raise NotImplementedError()

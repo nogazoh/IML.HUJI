@@ -40,6 +40,7 @@ def load_data(filename: str):
                                                   "sqft_lot15", "price"])
     new_df = new_df[new_df['price'] > 0]
     new_df = new_df[new_df['id'] > 0]
+    new_df = new_df[new_df['bathrooms'] > 0]
     #todo: add more conditions and explain in file
     return new_df
 
@@ -61,11 +62,11 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
     output_path: str (default ".")
         Path to folder in which plots are saved
     """
+    stdy = np.std(y)
     for feature in X:
         new_cov = np.cov(df[feature].values, y)
-        varx = np.var(df[feature].values)
-        vary = np.var(y)
-        pc = new_cov / vary * varx
+        stdx = np.std(df[feature].values)
+        pc = new_cov / stdy * stdx
         plt.title("Pearson Correlation between "
                   "" + str(feature) + " and price = " + str(pc))
         plt.xlabel(str(feature))
@@ -105,7 +106,8 @@ if __name__ == '__main__':
             loss_i[j] = cur_loss
         mean_loss[i] = np.mean(loss_i)
         var_loss[i] = np.var(loss_i)
-    prec = np.linspace(10, 100, 1)
+        plt.close()
+    prec = np.linspace(10.0, 100.0, 10)
     plt.title("connection between num of samples and mean of loss of prediction")
     plt.xlabel("percentage")
     plt.ylabel("mean loss")

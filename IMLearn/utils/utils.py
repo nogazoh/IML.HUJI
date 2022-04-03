@@ -34,11 +34,12 @@ def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .7
 
     """
     X["y"] = y
-    X = X.sample()
-    idx = len(X)*train_proportion
-    train_vals, test_vals = X[:idx, :], X[idx:, :]
-    train_y, train_x = train_vals.ix[:, :-1], train_vals.drop("y", axis=1)
-    test_y, test_x = test_vals.ix[:, :-1], test_vals.drop("y", axis=1)
+    print(train_proportion)
+    # X = X.sample()
+    idx = int(np.ceil(X.shape[0])*train_proportion)
+    train_vals, test_vals = X[:idx], X[idx:]
+    train_y, train_x = train_vals["y"], train_vals.drop("y", axis=1)
+    test_y, test_x = test_vals["y"], test_vals.drop("y", axis=1)
     to_ret = (train_x, train_y, test_x, test_y)
     return to_ret
 

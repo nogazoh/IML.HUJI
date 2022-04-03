@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import NoReturn
-from ...base import BaseEstimator
+from IMLearn.base import BaseEstimator
 import numpy as np
 from numpy.linalg import pinv
 from IMLearn.metrics import loss_functions
@@ -50,13 +50,11 @@ class LinearRegression(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
-        rows, cols = X.shape
+        mat = X.copy()
         if self.include_intercept_:
-            ones = np.ones(rows, 1)
-            np.append(X, ones, axis=1)
-            # X = np.c_(np.ones(rows), X)
-        x_cross = pinv(X)
-        self.coefs_ = x_cross * y
+            mat = np.c_[np.ones(X.shape[0]), mat]
+        x_cross = pinv(mat)
+        self.coefs_ = x_cross @ y
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -72,7 +70,7 @@ class LinearRegression(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        res = X * self.coefs_
+        res = X @ self.coefs_
         return res
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
@@ -92,5 +90,8 @@ class LinearRegression(BaseEstimator):
         loss : float
             Performance under MSE loss function
         """
-        sum_to_ret = loss_functions.mean_square_error(X * self.coefs_, y)
+        print(X.shape)
+        print(self.coefs_.shape)
+        print(y.shape)
+        sum_to_ret = loss_functions.mean_square_error(X @ self.coefs_, y)
         return sum_to_ret

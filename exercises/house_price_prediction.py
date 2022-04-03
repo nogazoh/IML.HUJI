@@ -32,14 +32,13 @@ def load_data(filename: str):
     new_df = new_df.reset_index()
     column_names = ['sqft_living', 'sqft_lot', 'sqft_above', 'sqft_basement']
     new_df['sqft_Total'] = new_df[column_names].sum(axis=1)
-    new_df = new_df.from_records(new_df, columns=["id", 'sqft_Total', "date", "bedrooms", "bathrooms", "sqft_living",
+    new_df = new_df.from_records(new_df, columns=['sqft_Total', "bedrooms", "bathrooms", "sqft_living",
                                                   "sqft_lot",
                                                   "floors", "waterfront", "view", "condition", "grade", "sqft_above",
                                                   "sqft_basement", "yr_built", "yr_renovated", "zipcode",
                                                   "sqft_living15",
                                                   "sqft_lot15", "price"])
     new_df = new_df[new_df['price'] > 0]
-    new_df = new_df[new_df['id'] > 0]
     new_df = new_df[new_df['bathrooms'] > 0]
     #todo: add more conditions and explain in file
     return new_df
@@ -64,6 +63,7 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
     """
     stdy = np.std(y)
     for feature in X:
+        # print(df[feature].values)
         new_cov = np.cov(df[feature].values, y)
         stdx = np.std(df[feature].values)
         pc = new_cov / stdy * stdx
@@ -78,7 +78,7 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
 if __name__ == '__main__':
     np.random.seed(0)
     # Question 1 - Load and preprocessing of housing prices dataset
-    df = load_data('../datasets/house_prices.csv')
+    df = load_data(r'C:\Users\nogaz\PycharmProjects\IML.HUJI\datasets\house_prices.csv')
     price = df['price']
     df = df.drop('price', axis=1)
     # Question 2 - Feature evaluation with respect to response
@@ -95,23 +95,25 @@ if __name__ == '__main__':
     #   4) Store average and variance of loss over test set
     mean_loss = np.ones(90, )
     var_loss = np.ones(90, )
+    samp_size = np.ones(90, )
+    # cur_tr_x, cur_tr_y, cur_te_x, cur_te_y = split_train_test(tr_x, tr_y)
+    model = LinearRegression(True)
     for i in range(10, 101):
-        cur_tr_x, cur_tr_y, cur_te_x, cur_te_y = split_train_test(tr_x, tr_y, float(1 / i))
+        f = i/100
         loss_i = np.ones(10, )
         for j in range(10):
-            model = LinearRegression(True)
-            model.fit(cur_tr_x.to_numpy(), cur_tr_y.to_numpy())
-            model.predict(te_x.to_numpy())
-            cur_loss = model.loss(te_x.to_numpy(), te_y.to_numpy())
+            cur_tr_x = tr_x.sample(frac=f)
+            cur_tr_y = tr_y[cur_tr_x.index]
+            model.fit(cur_tr_x.values, cur_tr_y.values)
+            cur_loss = model.loss(te_x.values, te_y.values)
             loss_i[j] = cur_loss
+        samp_size[i] = i
         mean_loss[i] = np.mean(loss_i)
-        var_loss[i] = np.var(loss_i)
+        var_loss[i] = np.std(loss_i)
         plt.close()
-    prec = np.linspace(10.0, 100.0, 10)
+
     plt.title("connection between num of samples and mean of loss of prediction")
     plt.xlabel("percentage")
     plt.ylabel("mean loss")
-    plt.scatter(prec, mean_loss)
+    plt.scatter(samp_size, mean_loss)
     plt.show()
-    #todo # Then plot average loss as function of training size with error ribbon of size (mean-2*std, mean+2*std)
-

@@ -70,6 +70,7 @@ class LinearRegression(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
+        X = np.c_[np.ones(X.shape[0]), X]
         res = X @ self.coefs_
         return res
 
@@ -90,8 +91,6 @@ class LinearRegression(BaseEstimator):
         loss : float
             Performance under MSE loss function
         """
-        print(X.shape)
-        print(self.coefs_.shape)
-        print(y.shape)
-        sum_to_ret = loss_functions.mean_square_error(X @ self.coefs_, y)
+
+        sum_to_ret = loss_functions.mean_square_error(y,self._predict(X))
         return sum_to_ret

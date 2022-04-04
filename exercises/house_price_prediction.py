@@ -29,10 +29,11 @@ def load_data(filename: str):
     """
     file = pd.read_csv(filename)
     new_df = pd.DataFrame(file)
+    new_df = new_df.dropna()
     new_df = new_df.reset_index()
-    column_names = ['sqft_living', 'sqft_lot', 'sqft_above', 'sqft_basement']
-    new_df['sqft_Total'] = new_df[column_names].sum(axis=1)
-    new_df = new_df.from_records(new_df, columns=['sqft_Total', "bedrooms", "bathrooms", "sqft_living",
+    # column_names = ['sqft_living', 'sqft_lot', 'sqft_above', 'sqft_basement']
+    # new_df['sqft_Total'] = new_df[column_names].sum(axis=1)
+    new_df = new_df.from_records(new_df, columns=["bedrooms", "bathrooms", "sqft_living",
                                                   "sqft_lot",
                                                   "floors", "waterfront", "view", "condition", "grade", "sqft_above",
                                                   "sqft_basement", "yr_built", "yr_renovated", "zipcode",
@@ -40,11 +41,12 @@ def load_data(filename: str):
                                                   "sqft_lot15", "price"])
     new_df = new_df[new_df['price'] > 0]
     new_df = new_df[new_df['bathrooms'] > 0]
-    #todo: add more conditions and explain in file
+    # todo: add more conditions and explain in file
     return new_df
 
 
-def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") -> NoReturn:
+def feature_evaluation(X: pd.DataFrame, y: pd.Series,
+                       output_path: str = "C:/Users/nogaz/PycharmProjects/IML.HUJI/graphs/ex2") -> NoReturn:
     """
     Create scatter plot between each feature and the response.
         - Plot title specifies feature name
@@ -61,18 +63,22 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
     output_path: str (default ".")
         Path to folder in which plots are saved
     """
-    stdy = np.std(y)
-    for feature in X:
-        # print(df[feature].values)
-        new_cov = np.cov(df[feature].values, y)
-        stdx = np.std(df[feature].values)
-        pc = new_cov / stdy * stdx
-        plt.title("Pearson Correlation between "
-                  "" + str(feature) + " and price = " + str(pc))
+
+    X = X.join(pd.DataFrame({'price': y}))
+    covx = X.cov()
+    wanted_corr = covx * (1 / X['price'].std())
+    for feature in X.columns:
+        fig = plt.figure()
+        fig.clear()
+        pear = wanted_corr[feature]['price'] / np.std(X[feature])
+        title = ("Pearson Correlation between "
+                 "" + str(feature) + " and price = " + str(pear))
+        plt.scatter(X[feature], y)
         plt.xlabel(str(feature))
-        plt.ylabel("price")
-        plt.scatter(df[feature].values, y)
-        plt.savefig(output_path + feature)
+        plt.ylabel('price')
+        plt.title(title)
+        plt.savefig(output_path + "/{}.png".format(feature))
+        plt.close()
 
 
 if __name__ == '__main__':
@@ -93,27 +99,39 @@ if __name__ == '__main__':
     #   2) Fit linear model (including intercept) over sampled set
     #   3) Test fitted model over test set
     #   4) Store average and variance of loss over test set
-    mean_loss = np.ones(90, )
-    var_loss = np.ones(90, )
-    samp_size = np.ones(90, )
-    # cur_tr_x, cur_tr_y, cur_te_x, cur_te_y = split_train_test(tr_x, tr_y)
-    model = LinearRegression(True)
-    for i in range(10, 101):
-        f = i/100
+    mean_loss = []
+    var_loss = []
+    model = LinearRegression()
+    samp_size = np.linspace(10, 100, num=90)
+    for i in range(10, 100):
+        f = i / 100
         loss_i = np.ones(10, )
         for j in range(10):
             cur_tr_x = tr_x.sample(frac=f)
-            cur_tr_y = tr_y[cur_tr_x.index]
-            model.fit(cur_tr_x.values, cur_tr_y.values)
-            cur_loss = model.loss(te_x.values, te_y.values)
+            cur_tr_y = tr_y.loc[cur_tr_x.index]
+            # cur_tr_y = tr_y.filter(cur_tr_x.index, axis=0)
+            model._fit(cur_tr_x.values, cur_tr_y.values)
+            cur_loss = model._loss(te_x.values, te_y.values)
             loss_i[j] = cur_loss
-        samp_size[i] = i
-        mean_loss[i] = np.mean(loss_i)
-        var_loss[i] = np.std(loss_i)
-        plt.close()
-
+        # print(np.mean(loss_i), np.std(loss_i))
+        mean_loss.append(np.mean(loss_i))
+        var_loss.append(np.std(loss_i))
+    plt.plot(samp_size, mean_loss)
     plt.title("connection between num of samples and mean of loss of prediction")
     plt.xlabel("percentage")
     plt.ylabel("mean loss")
-    plt.scatter(samp_size, mean_loss)
+    plt.fill_between(samp_size, mean_loss - np.sqrt(var_loss) * 2, mean_loss + np.sqrt(var_loss) * 2,
+                     color='b', alpha=.1)
     plt.show()
+    print("done!")
+
+    # fig = go.Figure(
+    #     [go.Scatter(x=samp_size, y=np.array(mean_loss) - (2 * np.array(var_loss)), fill=None, mode="lines", line=dict(color="lightgrey"),
+    #                 showlegend=False),
+    #      go.Scatter(x=samp_size, y=np.array(mean_loss) + (2 * np.array(var_loss)), fill='tonexty', mode="lines", line=dict(color="lightgrey"),
+    #                 showlegend=False),
+    #      go.Scatter(x=samp_size, y=mean_loss, mode="markers+lines", marker=dict(color="black", size=1),
+    #                 showlegend=False)],
+    #     layout=go.Layout(title=r"connection between num of samples and mean of loss of prediction"))
+    #
+    # plt.show()

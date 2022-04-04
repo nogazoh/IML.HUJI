@@ -1,7 +1,8 @@
 import numpy as np
+from numpy import ndarray
 
 
-def mean_square_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+def mean_square_error(y_true: np.ndarray, y_pred: np.ndarray) -> ndarray:
     """
     Calculate MSE loss
 
@@ -16,11 +17,9 @@ def mean_square_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     -------
     MSE of given predictions
     """
-    sum_to_mean = 0.0
-    rows = y_true.shape[0]
-    for i in range(rows):
-        sum_to_mean += (y_true[i] - y_pred[i])**2
-    val_to_ret = float(sum_to_mean/rows)
+    delta = y_true - y_pred
+    d_delta = delta * delta * delta.size
+    val_to_ret = np.mean(d_delta)
     return val_to_ret
 
 

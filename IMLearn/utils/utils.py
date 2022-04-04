@@ -34,7 +34,6 @@ def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .7
 
     """
     X["y"] = y
-    print(train_proportion)
     # X = X.sample()
     idx = int(np.ceil(X.shape[0])*train_proportion)
     train_vals, test_vals = X[:idx], X[idx:]

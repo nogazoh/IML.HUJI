@@ -30,8 +30,6 @@ def load_data(filename: str) -> pd.DataFrame:
     tmp_df = tmp_df.reset_index()
     tmp_df = tmp_df.dropna()
     tmp_df['DayOfYear'] = tmp_df["Date"].dt.dayofyear
-    # tmp_df = tmp_df.from_records(tmp_df, columns=["Country", "City",
-    #                                               "Year", "Month", "Day", "DayOfYear", "Temp"])
     tmp_df = tmp_df[tmp_df['Temp'] > -25]
     return tmp_df
 
@@ -54,30 +52,38 @@ if __name__ == '__main__':
     plt.ylabel("Temp")
     plt.title("Temperature per Day")
     plt.show()
-    # plt.title("Temp in Israel as a function of Day of year")
-    # plt.xlabel("Day of year")
-    # plt.ylabel("temp in Israel")
-    # plt.show()
     ######
     # q2 part 2
-    df_by_m = new_df.groupby(["Month"]).agg({"temp": ["std"]})
+    df_by_m = israel_df.groupby(["Month"], as_index=False).agg("std")
+    plt.bar(df_by_m["Month"], df_by_m["Temp"])
+    plt.title("Standard Deviation of Temp colored by months")
+    plt.ylabel("std")
+    plt.xlabel("Month")
+    plt.show()
+    plt.close()
 
     # Question 3 - Exploring differences between countries
-    df_by_c_m = new_df.groupby(['Country', 'Month']).agg({"temp": ["mean", "std"]})
-
-    new_size = df_by_c_m.size
-
-    # raise NotImplementedError()
+    df_by_c_m = new_df.groupby(['Country', 'Month'], as_index=False).agg({"Temp": ["mean", "std"]})
+    px.line(x=df_by_c_m["Month"], y=df_by_c_m.iloc[:, 2], error_y=df_by_c_m.iloc[:, 3],
+            color=df_by_c_m.iloc[:, 0], labels=dict(x="Month", y="Temp"),
+            title="Average Temperature per Month").show()
 
     # Question 4 - Fitting model for different values of `k`
     temp_isr = israel_df['Temp']
     israel_df = israel_df.drop('Temp', axis=1)
-    train_x, train_y, test_x, test_y = split_train_test(israel_df, temp_isr)
+    train_x, train_y, test_x, test_y = split_train_test(israel_df["DayOfYear"], temp_isr)
     loss_k = np.ones(10, )
     for k in range(1, 11):
         cur_pol = PolynomialFitting(k)
-        cur_pol.fit(train_x.values, train_y.values)
-        loss_k[k - 1] = round(cur_pol.loss(test_x.values, test_y.values), 2)
+        cur_pol._fit(train_x, train_y)
+        to_print = round(cur_pol._loss(test_x.values, test_y.values), 2)
+        print(to_print)
+        loss_k[k - 1] = to_print
+    plt.bar(range(1,11), loss_k)
+    plt.title("loss per polynomial degree")
+    plt.ylabel("loss")
+    plt.xlabel("polynomial degree")
+    plt.show()
 
     # Question 5 - Evaluating fitted model on different countries
     raise NotImplementedError()

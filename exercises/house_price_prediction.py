@@ -30,17 +30,18 @@ def load_data(filename: str):
     file = pd.read_csv(filename)
     new_df = pd.DataFrame(file)
     new_df = new_df.dropna()
-    new_df = new_df.reset_index()
-    # column_names = ['sqft_living', 'sqft_lot', 'sqft_above', 'sqft_basement']
-    # new_df['sqft_Total'] = new_df[column_names].sum(axis=1)
-    new_df = new_df.from_records(new_df, columns=["bedrooms", "bathrooms", "sqft_living",
-                                                  "sqft_lot",
-                                                  "floors", "waterfront", "view", "condition", "grade", "sqft_above",
-                                                  "sqft_basement", "yr_built", "yr_renovated", "zipcode",
-                                                  "sqft_living15",
-                                                  "sqft_lot15", "price"])
+    # new_df = new_df.reset_index()
+    new_df.drop(columns=['id'], inplace=True)
+    new_df.drop(columns=['date'], inplace=True)
+    # new_df = new_df.from_records(new_df, columns=["bedrooms", "bathrooms", "sqft_living",
+    #                                               "sqft_lot",
+    #                                               "floors", "waterfront", "view", "condition", "grade", "sqft_above",
+    #                                               "sqft_basement", "yr_built", "yr_renovated", "zipcode",
+    #                                               "sqft_living15",
+    #                                               "sqft_lot15", "price"])
     new_df = new_df[new_df['price'] > 0]
     new_df = new_df[new_df['bathrooms'] > 0]
+    new_df = new_df[new_df['sqft_lot15'] > 0]
     # todo: add more conditions and explain in file
     return new_df
 
@@ -66,11 +67,10 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series,
 
     X = X.join(pd.DataFrame({'price': y}))
     covx = X.cov()
-    wanted_corr = covx * (1 / X['price'].std())
     for feature in X.columns:
         fig = plt.figure()
         fig.clear()
-        pear = wanted_corr[feature]['price'] / np.std(X[feature])
+        pear = covx[feature]['price'] / (np.std(X[feature]) * np.std(X['price']))
         title = ("Pearson Correlation between "
                  "" + str(feature) + " and price = " + str(pear))
         plt.scatter(X[feature], y)
@@ -113,25 +113,15 @@ if __name__ == '__main__':
             model._fit(cur_tr_x.values, cur_tr_y.values)
             cur_loss = model._loss(te_x.values, te_y.values)
             loss_i[j] = cur_loss
-        # print(np.mean(loss_i), np.std(loss_i))
         mean_loss.append(np.mean(loss_i))
         var_loss.append(np.std(loss_i))
-    plt.plot(samp_size, mean_loss)
-    plt.title("connection between num of samples and mean of loss of prediction")
-    plt.xlabel("percentage")
-    plt.ylabel("mean loss")
-    plt.fill_between(samp_size, mean_loss - np.sqrt(var_loss) * 2, mean_loss + np.sqrt(var_loss) * 2,
-                     color='b', alpha=.1)
-    plt.show()
-    print("done!")
+    fig = go.Figure(
+        [go.Scatter(x=samp_size, y=np.array(mean_loss) - (2 * np.array(var_loss)), fill=None, mode="lines", line=dict(color="lightgrey"),
+                    showlegend=False),
+         go.Scatter(x=samp_size, y=np.array(mean_loss) + (2 * np.array(var_loss)), fill='tonexty', mode="lines", line=dict(color="lightgrey"),
+                    showlegend=False),
+         go.Scatter(x=samp_size, y=mean_loss, mode="markers+lines", marker=dict(color="black", size=1),
+                    showlegend=False)],
+        layout=go.Layout(title=r"connection between num of samples and mean of loss of prediction"))
+    fig.show()
 
-    # fig = go.Figure(
-    #     [go.Scatter(x=samp_size, y=np.array(mean_loss) - (2 * np.array(var_loss)), fill=None, mode="lines", line=dict(color="lightgrey"),
-    #                 showlegend=False),
-    #      go.Scatter(x=samp_size, y=np.array(mean_loss) + (2 * np.array(var_loss)), fill='tonexty', mode="lines", line=dict(color="lightgrey"),
-    #                 showlegend=False),
-    #      go.Scatter(x=samp_size, y=mean_loss, mode="markers+lines", marker=dict(color="black", size=1),
-    #                 showlegend=False)],
-    #     layout=go.Layout(title=r"connection between num of samples and mean of loss of prediction"))
-    #
-    # plt.show()

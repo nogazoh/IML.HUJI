@@ -33,13 +33,21 @@ def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .7
         Responses of test samples
 
     """
-    X["y"] = y
-    # X = X.sample()
-    idx = int(np.ceil(X.shape[0])*train_proportion)
-    train_vals, test_vals = X[:idx], X[idx:]
-    train_y, train_x = train_vals["y"], train_vals.drop("y", axis=1)
-    test_y, test_x = test_vals["y"], test_vals.drop("y", axis=1)
-    to_ret = (train_x, train_y, test_x, test_y)
+    # X["y"] = y
+    # # X = X.sample()
+    # idx = int(np.ceil(X.shape[0])*train_proportion)
+    # train_vals, test_vals = X[:idx], X[idx:]
+    # train_y, train_x = train_vals["y"], train_vals.drop("y", axis=1)
+    # test_y, test_x = test_vals["y"], test_vals.drop("y", axis=1)
+    # to_ret = (train_x, train_y, test_x, test_y)
+
+    n = X.shape[0]
+    per = np.random.permutation(n)
+    X = X.iloc[per]
+    y = y.iloc[per]
+    s_idx = int(np.ceil(n) * train_proportion)
+    train_x, train_y, test_x, test_y = X[:s_idx], y[:s_idx], X[s_idx:], y[s_idx:]
+    to_ret = train_x, train_y, test_x, test_y
     return to_ret
 
 

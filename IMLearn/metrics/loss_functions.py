@@ -18,7 +18,8 @@ def mean_square_error(y_true: np.ndarray, y_pred: np.ndarray) -> ndarray:
     MSE of given predictions
     """
     delta = y_true - y_pred
-    d_delta = delta * delta * delta.size
+    # d_delta = delta * delta * delta.size
+    d_delta = delta * delta
     val_to_ret = np.mean(d_delta)
     return val_to_ret
 

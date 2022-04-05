@@ -92,5 +92,5 @@ class LinearRegression(BaseEstimator):
             Performance under MSE loss function
         """
 
-        sum_to_ret = loss_functions.mean_square_error(y,self._predict(X))
+        sum_to_ret = loss_functions.mean_square_error(y, self._predict(X))
         return sum_to_ret

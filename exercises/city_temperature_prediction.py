@@ -38,8 +38,6 @@ if __name__ == '__main__':
     np.random.seed(0)
     # Question 1 - Load and preprocessing of city temperature dataset
     new_df = load_data(r'C:\Users\nogaz\PycharmProjects\IML.HUJI\datasets\City_Temperature.csv')
-    # temp = new_df['Temp']
-    # df = new_df.drop('Temp', axis=1)
     # Question 2 - Exploring data for specific country
     israel_df = new_df[new_df["Country"] == "Israel"]
     israel_df = israel_df[israel_df["Temp"] > -10]

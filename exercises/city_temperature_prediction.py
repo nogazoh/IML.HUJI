@@ -79,11 +79,26 @@ if __name__ == '__main__':
         to_print = round(cur_pol._loss(test_x.values, test_y.values), 2)
         print(to_print)
         loss_k[k - 1] = to_print
-    plt.bar(range(1,11), loss_k)
+    plt.bar(range(1, 11), loss_k)
     plt.title("loss per polynomial degree")
     plt.ylabel("loss")
     plt.xlabel("polynomial degree")
     plt.show()
 
     # Question 5 - Evaluating fitted model on different countries
-    raise NotImplementedError()
+    israel_pol = PolynomialFitting(5)
+    israel_pol._fit(train_x, train_y)
+    errors = []
+    countries = ["Jordan", "South Africa", "The Netherlands"]
+    for c in countries:
+        cur_df = new_df[new_df["Country"] == c]
+        cur_temp = cur_df['Temp']
+        not_israel_df = cur_df.drop('Temp', axis=1)
+        train_x, train_y, test_x, test_y = split_train_test(cur_df["DayOfYear"], cur_temp)
+        errors.append(israel_pol._loss(test_x, test_y))
+    plt.bar(countries, errors)
+    plt.title("loss per country (isreali best fit)")
+    plt.ylabel("loss")
+    plt.xlabel("country")
+    plt.show()
+    plt.close()

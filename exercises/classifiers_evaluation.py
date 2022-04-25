@@ -1,9 +1,12 @@
+import matplotlib.pyplot as plt
+
 from IMLearn.learners.classifiers import Perceptron, LDA, GaussianNaiveBayes
 import numpy as np
 from typing import Tuple
 import plotly.graph_objects as go
 import plotly.io as pio
 from plotly.subplots import make_subplots
+
 pio.templates.default = "simple_white"
 
 
@@ -26,7 +29,16 @@ def load_dataset(filename: str) -> Tuple[np.ndarray, np.ndarray]:
         Class vector specifying for each sample its class
 
     """
-    raise NotImplementedError()
+    data = np.load(filename)
+    return data[:, :2], data[:, 2].astype(int)
+
+
+def callback_helper(fit: Perceptron, x: np.ndarray, y: int):
+    return fit.loss(x, y)
+
+    # callback: Callable[[Perceptron, np.ndarray, int], None]
+    # A callable to be called after each update of the model while fitting to given data
+    # Callable function should receive as input a Perceptron instance, current sample and current response
 
 
 def run_perceptron():
@@ -36,29 +48,39 @@ def run_perceptron():
     Create a line plot that shows the perceptron algorithm's training loss values (y-axis)
     as a function of the training iterations (x-axis).
     """
-    for n, f in [("Linearly Separable", "linearly_separable.npy"), ("Linearly Inseparable", "linearly_inseparable.npy")]:
+    for n, f in [("Linearly Separable", r'C:\Users\nogaz\PycharmProjects\IML.HUJI\datasets\linearly_separable.npy'),
+                 (
+                 "Linearly Inseparable", r'C:\Users\nogaz\PycharmProjects\IML.HUJI\datasets\linearly_inseparable.npy')]:
         # Load dataset
-        raise NotImplementedError()
+        X, y = load_dataset(f)
 
         # Fit Perceptron and record loss in each fit iteration
         losses = []
-        raise NotImplementedError()
+        perceptron = Perceptron(callback=callback_helper)
 
         # Plot figure
-        raise NotImplementedError()
+        ln = len(losses)
+        sump = list(range(1, ln + 1))
+        plt.plot(sump, losses)
+        plt.title(n)
+        plt.ylabel("losses")
+        plt.xlabel("iteration num")
+        plt.show()
+        plt.close()
 
 
 def compare_gaussian_classifiers():
     """
     Fit both Gaussian Naive Bayes and LDA classifiers on both gaussians1 and gaussians2 datasets
     """
-    for f in ["gaussian1.npy", "gaussian2.npy"]:
+    for f in [r'C:\Users\nogaz\PycharmProjects\IML.HUJI\datasets\gaussian1.npy',
+              r'C:\Users\nogaz\PycharmProjects\IML.HUJI\datasets\gaussian2.npy']:
         # Load dataset
-        raise NotImplementedError()
-
+        X,y = load_dataset(f)
         # Fit models and predict over training set
-        raise NotImplementedError()
-
+        perceptron_q2 = Perceptron()
+        perceptron_q2.fit(X, y)
+        y_pred = perceptron_q2.predict(X)
         # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
         # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
         from IMLearn.metrics import accuracy
@@ -68,4 +90,4 @@ def compare_gaussian_classifiers():
 if __name__ == '__main__':
     np.random.seed(0)
     run_perceptron()
-    compare_gaussian_classifiers()
+    # compare_gaussian_classifiers()

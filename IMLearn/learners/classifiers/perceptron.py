@@ -102,8 +102,10 @@ class Perceptron(BaseEstimator):
                 if y[i]*(self.coefs_ @ X[i]) <= 0:
                     self.coefs_ = self.coefs_ + (y[i]*X[i]).T
                     flag = False
-                else:
-                    return
+                    self.callback_(self, X[i], y[i])
+                    break
+                # else:
+                #     return
             if flag:
                 return
             count += 1

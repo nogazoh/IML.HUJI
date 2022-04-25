@@ -33,13 +33,6 @@ def load_dataset(filename: str) -> Tuple[np.ndarray, np.ndarray]:
     return data[:, :2], data[:, 2].astype(int)
 
 
-
-
-    # callback: Callable[[Perceptron, np.ndarray, int], None]
-    # A callable to be called after each update of the model while fitting to given data
-    # Callable function should receive as input a Perceptron instance, current sample and current response
-
-
 def run_perceptron():
     """
     Fit and plot fit progression of the Perceptron algorithm over both the linearly separable and inseparable datasets
@@ -49,10 +42,10 @@ def run_perceptron():
     """
     for n, f in [("Linearly Separable", r'C:\Users\nogaz\PycharmProjects\IML.HUJI\datasets\linearly_separable.npy'),
                  (
-                 "Linearly Inseparable", r'C:\Users\nogaz\PycharmProjects\IML.HUJI\datasets\linearly_inseparable.npy')]:
+                         "Linearly Inseparable",
+                         r'C:\Users\nogaz\PycharmProjects\IML.HUJI\datasets\linearly_inseparable.npy')]:
         # Load dataset
         X, y = load_dataset(f)
-
         # Fit Perceptron and record loss in each fit iteration
         losses = []
 
@@ -60,6 +53,7 @@ def run_perceptron():
             losses.append(fit._loss(X, y))
 
         perceptron = Perceptron(callback=callback_helper)
+        perceptron.fit(X, y)
 
         # Plot figure
         ln = len(losses)
@@ -79,7 +73,7 @@ def compare_gaussian_classifiers():
     for f in [r'C:\Users\nogaz\PycharmProjects\IML.HUJI\datasets\gaussian1.npy',
               r'C:\Users\nogaz\PycharmProjects\IML.HUJI\datasets\gaussian2.npy']:
         # Load dataset
-        X,y = load_dataset(f)
+        X, y = load_dataset(f)
         # Fit models and predict over training set
         perceptron_q2 = Perceptron()
         perceptron_q2.fit(X, y)

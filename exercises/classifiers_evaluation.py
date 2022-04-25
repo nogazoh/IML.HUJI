@@ -64,6 +64,7 @@ def run_perceptron():
         plt.show()
         plt.close()
 
+
 def get_ellipse(mu: np.ndarray, cov: np.ndarray):
     """
     Draw an ellipse centered at given location and according to specified covariance matrix
@@ -86,7 +87,6 @@ def get_ellipse(mu: np.ndarray, cov: np.ndarray):
     return go.Scatter(x=mu[0] + xs, y=mu[1] + ys, mode="lines", marker_color="black")
 
 
-
 def compare_gaussian_classifiers():
     """
     Fit both Gaussian Naive Bayes and LDA classifiers on both gaussians1 and gaussians2 datasets
@@ -100,7 +100,7 @@ def compare_gaussian_classifiers():
         lda_new.fit(X, y)
         y_pred_lda = lda_new.predict(X)
         ga_na_ba = GaussianNaiveBayes()
-        ga_na_ba.fit(X,y)
+        ga_na_ba.fit(X, y)
         y_pred_gnb = ga_na_ba.predict(X)
 
         # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
@@ -124,9 +124,7 @@ def compare_gaussian_classifiers():
         fig.show()
         # Add `X` dots specifying fitted Gaussians' means
 
-
         # Add ellipses depicting the covariances of the fitted Gaussians
-
 
 
 if __name__ == '__main__':

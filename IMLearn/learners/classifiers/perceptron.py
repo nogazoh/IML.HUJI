@@ -94,13 +94,13 @@ class Perceptron(BaseEstimator):
         """
         count = 0
         flag = True
-        self.coefs_ = np.zeros(X.shape[0],)
+        self.coefs_ = np.zeros(X.shape[1])
         if self.include_intercept_:
-            self.coefs_ = np.c_[np.ones(X.shape[0]), self.coefs_]
+            X = np.c_[np.ones(X.shape[0]), X]
         while count <= self.max_iter_:
             for i in range(X.shape[0]):
                 if y[i]*(self.coefs_ @ X[i]) <= 0:
-                    self.coefs_ = self.coefs_ + (y[i]*X[i]).T
+                    self.coefs_ += (y[i]*X[i])
                     flag = False
                     self.callback_(self, X[i], y[i])
                     break
@@ -125,13 +125,9 @@ class Perceptron(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        y = np.ndarray(X.shape[0],)
-        for i in range(X.shape[0]):
-            if self.coefs_ @ X[i] <= 0:
-                y[i] = -1
-            else:
-                y[i] = 1
-        return y
+        if self.include_intercept_:
+            X = np.c_[np.ones(X.shape[0]), X]
+        return np.sign(X @ self.coefs_)
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """

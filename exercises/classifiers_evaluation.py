@@ -33,8 +33,7 @@ def load_dataset(filename: str) -> Tuple[np.ndarray, np.ndarray]:
     return data[:, :2], data[:, 2].astype(int)
 
 
-def callback_helper(fit: Perceptron, x: np.ndarray, y: int):
-    return fit.loss(x, y)
+
 
     # callback: Callable[[Perceptron, np.ndarray, int], None]
     # A callable to be called after each update of the model while fitting to given data
@@ -56,6 +55,10 @@ def run_perceptron():
 
         # Fit Perceptron and record loss in each fit iteration
         losses = []
+
+        def callback_helper(fit: Perceptron, x: np.ndarray, y_: int):
+            losses.append(fit._loss(X, y))
+
         perceptron = Perceptron(callback=callback_helper)
 
         # Plot figure

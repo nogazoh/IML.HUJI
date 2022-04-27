@@ -121,13 +121,28 @@ def compare_gaussian_classifiers():
         fig.add_trace(go.Scatter(x=X[:, 0], y=X[:, 1], mode="markers", showlegend=False,
                                  marker=dict(color=y_pred_lda, symbol=symbols[y])),
                       1, 2)
-        fig.show()
+
         # Add `X` dots specifying fitted Gaussians' means
+        def get_center(X, y):
+            centroids = []
+            for c in np.unique(y):
+                centroids.append(np.mean(X[y == c], axis=0))
+            return np.array(centroids)
+        center_lda = get_center(X, y_pred_lda)
+        center_gnb = get_center(X, y_pred_gnb)
+        fig.add_trace(go.Scatter(x=center_gnb[:, 0], y=center_gnb[:, 1], mode="markers", showlegend=False,
+                                 marker=dict(color='red', symbol='x', size=10)), 1, 1)
+        fig.add_trace(go.Scatter(x=center_lda[:, 0], y=center_lda[:, 1], mode="markers", showlegend=False,
+                                 marker=dict(color='red', symbol='x', size=10)), 1, 2)
 
         # Add ellipses depicting the covariances of the fitted Gaussians
+        for i, c in enumerate(np.unique(y)):
+            fig.add_trace(get_ellipse(ga_na_ba.mu_[i], np.diag(ga_na_ba.vars_[i])), 1, 1)
+            fig.add_trace(get_ellipse(lda_new.mu_[i], lda_new.cov_), 1, 2)
+        fig.show()
 
 
 if __name__ == '__main__':
     np.random.seed(0)
-    # run_perceptron()
+    run_perceptron()
     compare_gaussian_classifiers()

@@ -1,6 +1,9 @@
 from typing import NoReturn
+
+from learners import MultivariateGaussian
 from ...base import BaseEstimator
 import numpy as np
+from numpy.linalg import inv
 
 
 class GaussianNaiveBayes(BaseEstimator):
@@ -73,8 +76,18 @@ class GaussianNaiveBayes(BaseEstimator):
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `likelihood` function")
-
-        raise NotImplementedError()
+        to_ret = None
+        for i in range(self.classes_.shape[0]):
+            model = MultivariateGaussian()
+            model.mu_ = self.mu_[i]
+            model.cov_ = np.diag(self.vars_[i])
+            model.fitted_ = True
+            cur = model.pdf(X)
+            if to_ret is None:
+                to_ret = cur
+            else:
+                to_ret = np.c_[to_ret, cur]
+        return to_ret
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """

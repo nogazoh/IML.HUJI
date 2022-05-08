@@ -39,7 +39,16 @@ class DecisionStump(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        raise NotImplementedError()
+        for j in range(X.shape[1]):
+            self.j_ = j
+            thr_p, t_e_p = self._find_threshold(X[:,self.j_], y, 1)
+            thr_m, t_e_m= self._find_threshold(X[:,self.j_], y, -1)
+            if t_e_m <= t_e_p:
+                self.threshold_ = thr_m
+                self.sign_ = -1
+            else:
+                self.threshold_ = thr_p
+                self.sign_ = 1
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -63,7 +72,10 @@ class DecisionStump(BaseEstimator):
         Feature values strictly below threshold are predicted as `-sign` whereas values which equal
         to or above the threshold are predicted as `sign`
         """
-        raise NotImplementedError()
+        y_pred = np.ones(X.shape[0],)
+        np.where(y_pred< self.threshold_, -self.sign_, self.sign_)
+        return y_pred
+
 
     def _find_threshold(self, values: np.ndarray, labels: np.ndarray, sign: int) -> Tuple[float, float]:
         """
@@ -95,7 +107,17 @@ class DecisionStump(BaseEstimator):
         For every tested threshold, values strictly below threshold are predicted as `-sign` whereas values
         which equal to or above the threshold are predicted as `sign`
         """
-        raise NotImplementedError()
+        thr_err = 1
+        thr = 0
+        for i in range(values.shape[0]):
+            thr_tmp = values[i]
+            tmp_pred = np.ones(values.shape[0], )
+            np.where(tmp_pred < self.threshold_, -sign, sign)
+            tmp_thr_err = (labels != tmp_pred).sum()/values.shape[0]
+            if tmp_thr_err < thr_err:
+                thr_err = tmp_thr_err
+                thr = thr_tmp
+        return thr, thr_err
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -114,4 +136,5 @@ class DecisionStump(BaseEstimator):
         loss : float
             Performance under missclassification loss function
         """
-        raise NotImplementedError()
+        from ...metrics import misclassification_error
+        return misclassification_error(y, self._predict(X))

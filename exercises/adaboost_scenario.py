@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 from typing import Tuple
 from IMLearn.metalearners.adaboost import AdaBoost
@@ -42,8 +43,21 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
     (train_X, train_y), (test_X, test_y) = generate_data(train_size, noise), generate_data(test_size, noise)
 
     # Question 1: Train- and test errors of AdaBoost in noiseless case
-    raise NotImplementedError()
+    new_adaboost = AdaBoost(DecisionStump, n_learners).fit(train_X, train_y)
+    test_thr_err, train_thr_err = [], []
+    for t in range(n_learners):
+        train_thr_err.append(new_adaboost.partial_loss(train_X, train_y, t))
+        test_thr_err.append(new_adaboost.partial_loss(test_X, test_y, t))
+    x_ax = list(range(n_learners))
+    plt.plot(x_ax, test_thr_err)
+    plt.plot(x_ax, train_thr_err)
+    plt.title(f"Train and Test Errors as a function of the number of fitted learners"
+              f" | noise :{noise}"), plt.xlabel("Learners"), plt.ylabel("Error")
+    plt.legend(["Test Error", "Train Error"])
+    plt.grid()
+    plt.show()
 
+    ##############################################
     # Question 2: Plotting decision surfaces
     T = [5, 50, 100, 250]
     lims = np.array([np.r_[train_X, test_X].min(axis=0), np.r_[train_X, test_X].max(axis=0)]).T + np.array([-.1, .1])
@@ -58,4 +72,5 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
 
 if __name__ == '__main__':
     np.random.seed(0)
-    raise NotImplementedError()
+    fit_and_evaluate_adaboost(noise=0)
+    fit_and_evaluate_adaboost(noise=0.4)

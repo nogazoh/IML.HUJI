@@ -20,12 +20,14 @@ class DecisionStump(BaseEstimator):
     self.sign_: int
         The label to predict for samples where the value of the j'th feature is about the threshold
     """
+
     def __init__(self) -> DecisionStump:
         """
         Instantiate a Decision stump classifier
         """
         super().__init__()
         self.threshold_, self.j_, self.sign_ = None, None, None
+        self.D_ = None
 
     def _fit(self, X: np.ndarray, y: np.ndarray) -> NoReturn:
         """
@@ -39,16 +41,16 @@ class DecisionStump(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
+        start_err, theta_start = np.inf, np.inf
         for j in range(X.shape[1]):
-            self.j_ = j
-            thr_p, t_e_p = self._find_threshold(X[:,self.j_], y, 1)
-            thr_m, t_e_m= self._find_threshold(X[:,self.j_], y, -1)
-            if t_e_m <= t_e_p:
-                self.threshold_ = thr_m
-                self.sign_ = -1
-            else:
-                self.threshold_ = thr_p
-                self.sign_ = 1
+            thr_p, t_e_p = self._find_threshold(X[:, self.j_], y, 1)
+            thr_m, t_e_m = self._find_threshold(X[:, self.j_], y, -1)
+            if thr_m < start_err:  # todo is it necessary?
+                self.threshold_, self.sign_, self.j_ = thr_m, -1, j
+                start_err = thr_m
+            if thr_p < start_err:  # todo is it necessary?
+                self.threshold_, self.sign_, self.j_ = thr_m, 1, j
+                start_err = thr_p
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -72,10 +74,8 @@ class DecisionStump(BaseEstimator):
         Feature values strictly below threshold are predicted as `-sign` whereas values which equal
         to or above the threshold are predicted as `sign`
         """
-        y_pred = np.ones(X.shape[0],)
-        np.where(y_pred< self.threshold_, -self.sign_, self.sign_)
-        return y_pred
-
+        return np.where(X[:, self.j_] < self.threshold_, -self.sign_, self.sign_)
+        # return self.sign_ * ((X[:, self.j_] >= self.threshold_) * 2 - 1)
 
     def _find_threshold(self, values: np.ndarray, labels: np.ndarray, sign: int) -> Tuple[float, float]:
         """
@@ -111,13 +111,26 @@ class DecisionStump(BaseEstimator):
         thr = 0
         for i in range(values.shape[0]):
             thr_tmp = values[i]
-            tmp_pred = np.ones(values.shape[0], )
-            np.where(tmp_pred < self.threshold_, -sign, sign)
-            tmp_thr_err = (labels != tmp_pred).sum()/values.shape[0]
+            tmp_pred = np.ones(values.shape[0])
+            tmp_pred = np.where(tmp_pred < self.threshold_, -sign, sign)
+            tmp_thr_err = (labels != tmp_pred).sum() / values.shape[0]
             if tmp_thr_err < thr_err:
                 thr_err = tmp_thr_err
                 thr = thr_tmp
         return thr, thr_err
+
+        # sort_idx = np.argsort(values)
+        # values, labels = values[sort_idx], labels[sort_idx]
+        # lab = np.concatenate([[0], labels[:]])
+        # lab2 = np.concatenate([labels[:], [0]])
+        # losses = np.minimum(np.cumsum(lab2 * sign),
+        #                     np.cumsum(lab[::-1] * -sign)[::-1])
+        # min_id = np.argmin(losses)
+        # if values[min_id] == np.max(values):
+        #     return np.inf, losses[min_id]
+        # if values[min_id] == np.min(values):
+        #     return -np.inf, losses[min_id]
+        # return values[min_id], losses[min_id]
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """

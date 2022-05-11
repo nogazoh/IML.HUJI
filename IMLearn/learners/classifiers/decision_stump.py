@@ -41,16 +41,12 @@ class DecisionStump(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        start_err, theta_start = np.inf, np.inf
-        for j in range(X.shape[1]):
-            thr_p, t_e_p = self._find_threshold(X[:, self.j_], y, 1)
-            thr_m, t_e_m = self._find_threshold(X[:, self.j_], y, -1)
-            if thr_m < start_err:  # todo is it necessary?
-                self.threshold_, self.sign_, self.j_ = thr_m, -1, j
-                start_err = thr_m
-            if thr_p < start_err:  # todo is it necessary?
-                self.threshold_, self.sign_, self.j_ = thr_m, 1, j
-                start_err = thr_p
+        err_thr, theta = np.inf, np.inf
+        for sign, j in product([-1, 1], range(X.shape[1])):
+            threshold, tmp_err = self._find_threshold(X[:, j], y, sign)
+            if tmp_err < err_thr:
+                self.sign_, self.threshold_, self.j_ = sign, threshold, j
+                err_thr = tmp_err
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -107,30 +103,18 @@ class DecisionStump(BaseEstimator):
         For every tested threshold, values strictly below threshold are predicted as `-sign` whereas values
         which equal to or above the threshold are predicted as `sign`
         """
-        thr_err = 1
-        thr = 0
-        for i in range(values.shape[0]):
-            thr_tmp = values[i]
-            tmp_pred = np.ones(values.shape[0])
-            tmp_pred = np.where(tmp_pred < self.threshold_, -sign, sign)
-            tmp_thr_err = (labels != tmp_pred).sum() / values.shape[0]
-            if tmp_thr_err < thr_err:
-                thr_err = tmp_thr_err
-                thr = thr_tmp
-        return thr, thr_err
-
-        # sort_idx = np.argsort(values)
-        # values, labels = values[sort_idx], labels[sort_idx]
-        # lab = np.concatenate([[0], labels[:]])
-        # lab2 = np.concatenate([labels[:], [0]])
-        # losses = np.minimum(np.cumsum(lab2 * sign),
-        #                     np.cumsum(lab[::-1] * -sign)[::-1])
-        # min_id = np.argmin(losses)
-        # if values[min_id] == np.max(values):
-        #     return np.inf, losses[min_id]
-        # if values[min_id] == np.min(values):
-        #     return -np.inf, losses[min_id]
-        # return values[min_id], losses[min_id]
+        sort_idx = np.argsort(values)
+        values, labels = values[sort_idx], labels[sort_idx]
+        labl1, labl2 = np.concatenate([[0], labels[:]]), np.concatenate([labels[:], [0]])
+        errors = np.minimum(np.cumsum(labl2 * sign),
+                            np.cumsum(labl1[::-1] * -sign)[::-1])
+        min_idx = np.argmin(errors)
+        if values[min_idx] == np.max(values):
+            return np.inf, errors[min_idx]
+        if values[min_idx] == np.min(values):
+            return -np.inf, errors[min_idx]
+        # according to answer in forum regarding all cases
+        return values[min_idx], errors[min_idx]
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """

@@ -1,5 +1,7 @@
 from __future__ import annotations
 from typing import NoReturn
+
+from metrics import mean_square_error
 from ...base import BaseEstimator
 import numpy as np
 
@@ -32,7 +34,6 @@ class RidgeRegression(BaseEstimator):
             Coefficients vector fitted by linear regression. To be set in
             `LinearRegression.fit` function.
         """
-
 
         """
         Initialize a ridge regression model
@@ -94,4 +95,4 @@ class RidgeRegression(BaseEstimator):
         loss : float
             Performance under MSE loss function
         """
-        raise NotImplementedError()
+        return mean_square_error(y, self._predict(X))

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import NoReturn
-
+from numpy.linalg import pinv
 from metrics import mean_square_error
 from ...base import BaseEstimator
 import numpy as np
@@ -60,7 +60,12 @@ class RidgeRegression(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
-        raise NotImplementedError()
+        mat = X.copy()
+        if self.include_intercept_:
+            mat = np.c_[np.ones(X.shape[0]), mat]
+        x_t = mat.transpose()
+        x_cross = pinv(x_t @ mat + self.lam_*np.identity(X.shape[0]))
+        self.coefs_ = x_cross @ x_t @ y
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -76,7 +81,9 @@ class RidgeRegression(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        X = np.c_[np.ones(X.shape[0]), X]
+        res = X @ self.coefs_
+        return res
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """

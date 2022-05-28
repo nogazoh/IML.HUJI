@@ -98,19 +98,40 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
     """
     # Question 6 - Load diabetes dataset and split into training and testing portions
     X, y = datasets.load_diabetes(return_X_y=True)
-    train_x = np.delete(X, range(n_samples, X.shape[0]))
-    test_x = np.delete(X, range(0, n_samples))
-    train_y = np.delete(y, range(n_samples, X.shape[0]))
-    test_y = np.delete(y, range(0, n_samples))
+    train_x = np.delete(X, range(n_samples, X.shape[0]), axis=0)
+    test_x = np.delete(X, range(0, n_samples), axis=0)
+    train_y = np.delete(y, range(n_samples, X.shape[0]), axis=0)
+    test_y = np.delete(y, range(0, n_samples), axis=0)
 
     # Question 7 - Perform CV for different values of the regularization parameter for Ridge and Lasso regressions
 
+    train_err_ridge, train_err_lasso = [], []
+    valid_err_ridge, valid_err_lasso = [], []
+    lams = np.linspace(0, 30, n_evaluations)
+    for lam in lams:
+        train_err_ridge1, valid_err_ridge1 = cross_validate(RidgeRegression(lam), train_x, train_y, mean_square_error)
+        train_err_lasso1, valid_err_lasso1 = cross_validate(Lasso(lam), train_x, train_y, mean_square_error)
+        train_err_ridge.append(train_err_ridge1)
+        valid_err_ridge.append(valid_err_ridge1)
+        train_err_lasso.append(train_err_lasso1)
+        valid_err_lasso.append(valid_err_lasso1)
+
+    fig = go.Figure()
+    fig.add_traces([go.Scatter(x=lams, y=train_err_ridge, mode="markers", name="train_err_ridge",
+                               marker_color = 'rgb(140, 173, 137)'),
+                    go.Scatter(x=lams, y=valid_err_ridge, mode="markers", name="valid_err_ridge",
+                               marker_color = 'rgb(68, 117, 85)'),
+                    go.Scatter(x=lams, y=train_err_lasso, mode="markers", name="train_err_lasso",
+                               marker_color='rgb(209, 125, 125)'),
+                    go.Scatter(x=lams, y=valid_err_lasso, mode="markers", name="valid_err_lasso",
+                               marker_color='rgb(150, 56, 50)')
+                    ]).update_layout(title="Average training and validation err",
+                       xaxis_title="lamda",
+                       yaxis_title="average err")\
+        .show()
+
     # cross_validate(estimator: BaseEstimator, X: np.ndarray, y: np.ndarray,
     # scoring: Callable[[np.ndarray, np.ndarray, ...], float], cv: int = 5) -> Tuple[float, float]
-
-
-
-    raise NotImplementedError()
 
     # Question 8 - Compare best Ridge model, best Lasso model and Least Squares model
     raise NotImplementedError()
@@ -118,7 +139,7 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
 
 if __name__ == '__main__':
     np.random.seed(0)
-    select_polynomial_degree()
-    select_polynomial_degree(noise=0)
-    select_polynomial_degree(1500, 10)
+    # select_polynomial_degree()
+    # select_polynomial_degree(noise=0)
+    # select_polynomial_degree(1500, 10)
     select_regularization_parameter()

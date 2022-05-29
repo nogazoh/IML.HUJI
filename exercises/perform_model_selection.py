@@ -47,9 +47,9 @@ def select_polynomial_degree(n_samples: int = 100, noise: float = 5):
                                marker=dict(color="green", opacity=.7), name="Test noisy samples",
                                showlegend=True)
                     ]).update_layout(title="Samples display",
-                       xaxis_title="X vals",
-                       yaxis_title="y vals" )\
-        # .show()
+                                     xaxis_title="X vals",
+                                     yaxis_title="y vals") \
+        .show()
     train_x = train_x.to_numpy()
     train_y = train_y.to_numpy()
     test_x = test_x.to_numpy()
@@ -59,7 +59,7 @@ def select_polynomial_degree(n_samples: int = 100, noise: float = 5):
     av_train_err = []
     av_validation_err = []
     for k in range(0, 11):
-        cur_model = PolynomialFitting(k)
+        # cur_model = PolynomialFitting(k)
         t_s, v_s = cross_validate(PolynomialFitting(k), train_x, train_y,
                                   mean_square_error)  # todo check
         av_train_err.append(t_s)
@@ -67,20 +67,18 @@ def select_polynomial_degree(n_samples: int = 100, noise: float = 5):
     k_x = list(range(11))
     fig = go.Figure()
     fig.add_traces([go.Scatter(x=k_x, y=av_train_err, mode="markers+lines", name="Average training err",
-                               marker_color = 'rgb(152,171,150)'),
+                               marker_color='rgb(152,171,150)'),
                     go.Scatter(x=k_x, y=av_validation_err, mode="markers+lines", name="Average validation err",
-                               marker_color = 'rgb(25,115,132)'), #25,115,132
+                               marker_color='rgb(25,115,132)'),  # 25,115,132
                     ]).update_layout(title="Average training and validation err",
-                       xaxis_title="polynomial degree",
-                       yaxis_title="average err" )\
-        # .show()
+                                     xaxis_title="polynomial degree",
+                                     yaxis_title="average err") \
+        .show()
 
     # Question 3 - Using best value of k, fit a k-degree polynomial model and report test error
     min_k = av_validation_err.index(min(av_validation_err))
-    # train_x = train_x.to_numpy()
-    # train_y = train_y.to_numpy()
-    # cur_model = PolynomialFitting(min_k).fit(np.squeeze(train_x), np.squeeze(train_y))
-    # print(min_k, mean_square_error(np.squeeze(test_y), round(cur_model.predict(test_x), 2))) #todo fix
+    cur_model = PolynomialFitting(min_k).fit(np.squeeze(train_x), np.squeeze(train_y))
+    print(min_k,round(cur_model.loss(test_x, test_y), 2))
 
 
 def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 500):
@@ -107,7 +105,7 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
 
     train_err_ridge, train_err_lasso = [], []
     valid_err_ridge, valid_err_lasso = [], []
-    lams = np.linspace(0, 30, n_evaluations)
+    lams = np.linspace(0.001, 4, n_evaluations)
     for lam in lams:
         train_err_ridge1, valid_err_ridge1 = cross_validate(RidgeRegression(lam), train_x, train_y, mean_square_error)
         train_err_lasso1, valid_err_lasso1 = cross_validate(Lasso(lam), train_x, train_y, mean_square_error)
@@ -118,28 +116,35 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
 
     fig = go.Figure()
     fig.add_traces([go.Scatter(x=lams, y=train_err_ridge, mode="markers", name="train_err_ridge",
-                               marker_color = 'rgb(140, 173, 137)'),
+                               marker_color='rgb(140, 173, 137)'),
                     go.Scatter(x=lams, y=valid_err_ridge, mode="markers", name="valid_err_ridge",
-                               marker_color = 'rgb(68, 117, 85)'),
+                               marker_color='rgb(68, 117, 85)'),
                     go.Scatter(x=lams, y=train_err_lasso, mode="markers", name="train_err_lasso",
                                marker_color='rgb(209, 125, 125)'),
                     go.Scatter(x=lams, y=valid_err_lasso, mode="markers", name="valid_err_lasso",
                                marker_color='rgb(150, 56, 50)')
                     ]).update_layout(title="Average training and validation err",
-                       xaxis_title="lamda",
-                       yaxis_title="average err")\
+                                     xaxis_title="lamda",
+                                     yaxis_title="average err") \
         .show()
 
-    # cross_validate(estimator: BaseEstimator, X: np.ndarray, y: np.ndarray,
-    # scoring: Callable[[np.ndarray, np.ndarray, ...], float], cv: int = 5) -> Tuple[float, float]
-
     # Question 8 - Compare best Ridge model, best Lasso model and Least Squares model
-    raise NotImplementedError()
+
+    min_r, min_l = valid_err_ridge.index(min(valid_err_ridge)), valid_err_lasso.index(min(valid_err_lasso))
+    model_ridge, model_lasso, model_lin = RidgeRegression(min_r), Lasso(min_l), LinearRegression()
+    model_ridge.fit(train_x, train_y)
+    model_lin.fit(train_x, train_y)
+    model_lasso.fit(train_x, train_y)
+    e_r = model_ridge.loss(test_x, test_y)
+    y_pred = model_lasso.predict(test_x)
+    e_las = mean_square_error(test_y, y_pred)
+    e_lin = model_lin.loss(test_x, test_y)
+    print(e_r, e_las, e_lin)
 
 
 if __name__ == '__main__':
     np.random.seed(0)
-    # select_polynomial_degree()
-    # select_polynomial_degree(noise=0)
-    # select_polynomial_degree(1500, 10)
+    select_polynomial_degree()
+    select_polynomial_degree(noise=0)
+    select_polynomial_degree(1500, 10)
     select_regularization_parameter()

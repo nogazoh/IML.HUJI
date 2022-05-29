@@ -35,6 +35,7 @@ class PolynomialFitting(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
+        X,y = np.squeeze(X), np.squeeze(y)
         return self.Lin_reg._fit(self.__transform(X), y)
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
@@ -51,6 +52,7 @@ class PolynomialFitting(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
+        X = np.squeeze(X)
         return self.Lin_reg._predict(self.__transform(X))
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
@@ -70,6 +72,7 @@ class PolynomialFitting(BaseEstimator):
         loss : float
             Performance under MSE loss function
         """
+        X, y = np.squeeze(X), np.squeeze(y)
         return self.Lin_reg._loss(self.__transform(X), y)
 
     def __transform(self, X: np.ndarray) -> np.ndarray:

@@ -47,20 +47,20 @@ def cross_validate(estimator: BaseEstimator, X: np.ndarray, y: np.ndarray,
 
     for i in range(cv):
         cur_X, cur_y = X, y
-        cur_X = np.squeeze(cur_X)
-        cur_y = np.squeeze(cur_y)
+        # cur_X = np.squeeze(cur_X)
+        # cur_y = np.squeeze(cur_y)
 
         start, end = end, end + X_sub_arrays[i].shape[0]
-        cur_X = np.delete(cur_X, range(start, end))
-        cur_y = np.delete(cur_y, range(start, end))
+        cur_X = np.delete(cur_X, range(start, end), axis=0)
+        cur_y = np.delete(cur_y, range(start, end), axis=0)
 
         model = estimator.fit(cur_X, cur_y)
-        validation_x = np.squeeze(X_sub_arrays[i])
-        validation_y = np.squeeze(y_sub_arrays[i])
+        # validation_x = np.squeeze(X_sub_arrays[i])
+        # validation_y = np.squeeze(y_sub_arrays[i])
 
-        y_val_pred = model.predict(validation_x)
+        y_val_pred = model.predict(X_sub_arrays[i])
         all_y_pred = model.predict(cur_X)
 
-        validation_score.append(scoring(validation_y, y_val_pred))
+        validation_score.append(scoring(y_sub_arrays[i], y_val_pred))
         train_score.append(scoring(cur_y, all_y_pred))
     return np.average(train_score), np.average(validation_score)

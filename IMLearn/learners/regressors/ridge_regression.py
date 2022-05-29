@@ -60,11 +60,10 @@ class RidgeRegression(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
-        mat = X.copy()
         if self.include_intercept_:
-            mat = np.c_[np.ones(X.shape[0]), mat]
-        x_t = mat.transpose()
-        x_cross = pinv(x_t @ mat + self.lam_*np.identity(X.shape[0]))
+            X = np.insert(X, 0, 1, axis=1)  # np.c_[np.ones(X.shape[0]), mat]
+        x_t = X.transpose()
+        x_cross = pinv(x_t @ X + self.lam_ * np.identity(X.shape[1]))
         self.coefs_ = x_cross @ x_t @ y
 
     def _predict(self, X: np.ndarray) -> np.ndarray:

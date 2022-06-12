@@ -119,4 +119,12 @@ class GradientDescent:
                 Euclidean norm of w^(t)-w^(t-1)
 
         """
+        eucl_norm, iter = 0, 0
+        while (eucl_norm < self.tol_) or (iter == self.max_iter_):
+            iter += 1
+            eucl_norm = w^(t)-w^(t-1)
+            #At each iteration the learning rate is specified according to self.learning_rate_.lr_step
+            self.callback_(GradientDescent, weights, output, grad, iter, self.learning_rate_, eucl_norm)
+
+
         raise NotImplementedError()

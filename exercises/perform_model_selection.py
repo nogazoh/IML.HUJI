@@ -59,7 +59,7 @@ def select_polynomial_degree(n_samples: int = 100, noise: float = 5):
     av_train_err = []
     av_validation_err = []
     for k in range(0, 11):
-        # cur_model = PolynomialFitting(k)
+        cur_model = PolynomialFitting(k)
         t_s, v_s = cross_validate(PolynomialFitting(k), train_x, train_y,
                                   mean_square_error)  # todo check
         av_train_err.append(t_s)
@@ -131,7 +131,7 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
     # Question 8 - Compare best Ridge model, best Lasso model and Least Squares model
 
     min_r, min_l = valid_err_ridge.index(min(valid_err_ridge)), valid_err_lasso.index(min(valid_err_lasso))
-    model_ridge, model_lasso, model_lin = RidgeRegression(min_r), Lasso(min_l), LinearRegression()
+    model_ridge, model_lasso, model_lin = RidgeRegression(lams[min_r]), Lasso(lams[min_l]), LinearRegression()
     model_ridge.fit(train_x, train_y)
     model_lin.fit(train_x, train_y)
     model_lasso.fit(train_x, train_y)
@@ -145,6 +145,6 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
 if __name__ == '__main__':
     np.random.seed(0)
     select_polynomial_degree()
-    select_polynomial_degree(noise=0)
-    select_polynomial_degree(1500, 10)
-    select_regularization_parameter()
+    # select_polynomial_degree(noise=0)
+    # select_polynomial_degree(1500, 10)
+    # select_regularization_parameter()
